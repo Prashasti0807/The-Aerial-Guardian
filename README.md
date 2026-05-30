@@ -78,7 +78,7 @@ python pipeline.py \
   --model mshamrai/yolov8s-visdrone \
   --imgsz 1080 \
   --conf 0.25 \
-  --output output/uav0000086_00000_v.mp4
+  --output output/uav0000086_00000_v.mp4 
 ```
 
 ### Pipeline Options:
