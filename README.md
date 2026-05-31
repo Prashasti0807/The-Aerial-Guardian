@@ -11,20 +11,31 @@ The pipeline addresses two major drone-specific tracking challenges:
 ## Technical Architecture
 
 ```mermaid
-graph TD
-    A[Drone Video Frame] --> B[GMC Motion Estimator]
+graph LR
+    A[Drone Video Frame]
+
+    %% Detection Branch
     A --> C[YOLOv8-VisDrone Detector]
-    B -->|Calculate Homography Matrix H| D[Motion Compensation]
     C -->|BBoxes & Confidence Scores| E[Dual-Threshold Split]
+
+    %% Motion Branch
+    A --> B[GMC Motion Estimator]
+    B -->|Calculate Homography Matrix H| D[Motion Compensation]
     D -->|Warp Track States & Covariances| F[Kalman Filter Predictions]
-    E -->|High Conf Detections| G[First Association: IoU Match]
-    E -->|Low Conf Detections| H[Second Association: IoU Match]
-    F --> G
-    G -->|Unmatched Tracks| H
+
+    %% Association Stage
+    F --> G[First Association: IoU Match]
+    E -->|High Conf Detections| G
+
     G -->|Matched Tracks| I[Update Active Tracks]
+    G -->|Unmatched Tracks| H[Second Association: IoU Match]
+    G -->|Unmatched Detections| K[Initialize New Tracks]
+
+    E -->|Low Conf Detections| H
     H -->|Matched Tracks| I
     H -->|Unmatched Tracks| J[Mark Lost / Terminate]
-    G -->|Unmatched Detections| K[Initialize New Tracks]
+
+    %% Output Stage
     I --> L[Draw Sleek BBoxes & Fading Tails]
     L --> M[Output MP4 Frame]
 ```
